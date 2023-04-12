@@ -30,6 +30,12 @@ def choose_option():
     # prompt user to enter country name
     country = input('Which country do you want that information for? ')
     print(country.capitalize())
+    # check if country is valid
+    response = requests.get(base_url + 'name/' + country)
+    if response.status_code == 404:
+        print('Invalid country. Please try again.')
+        # return to choose option function
+        return choose_option()
     # return the option and country chosen
     return option, country
 
@@ -42,35 +48,52 @@ def proceed_option():
              get_language(country)
         if option == '3':
              get_timezone(country)
-        # if option == '4':
-        #     get_currency(country)
+        if option == '4':
+             get_currency(country)
         else:
              break
 
 def get_population(country):
     response = requests.get(base_url + 'name/' + country)
     json_result = response.json()
-    print(f"The population of {country.capitalize()} is {json_result[0]['population']}.")
+    for pop in json_result:
+    
+        number = str(round((pop['population']/1000000), 3)) + " million"
+        print(f"The population of {pop['name']['common']} is {number}.")
+
+        
 
 
 def get_language(country):
-    # using for loop to get all languages
+    # get the languages of the country using for loop
     response = requests.get(base_url + 'name/' + country)
     json_result = response.json()
-    print(f"The language/s of {country.capitalize()} is/are {json_result[1]['languages']}.")
+    for countryData in json_result:
+        languages = countryData['languages'].values()
+        print(f"The language/s of {countryData['name']['common']} is/are {', '.join(languages)}.")
+            
     
 
 def get_timezone(country):
     response = requests.get(base_url + 'name/' + country)
     json_result = response.json()
-    print(f"The timezone/s of {country.capitalize()} is/are {json_result[0]['timezones']}.")  
+    # get the timezone of the country using for loop
+    for countryData in json_result:
+        timezone = countryData['timezones']
+        print(f"The timezone/s of {countryData['name']['common']} is/are {timezone}.")
 
 def get_currency(country):
     response = requests.get(base_url + 'name/' + country)
     json_result = response.json()
-    print(f"The currency of {country.capitalize()} is {json_result[0]['currencies']}.")
-    
+     # get the currency of the country using for loop
+    for countryData in json_result:
+        currency = countryData['currencies'].values()
+        # extract only values of name and symbol
+        for value in currency:
+            currency = value['name'] + ' (' + value['symbol'] + ')'
+        print(f"The currency of {countryData['name']['common']} is {currency}.")
 
+    
 proceed_option()
 
 
